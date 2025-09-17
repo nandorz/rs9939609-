@@ -6,7 +6,7 @@ library(tidyr)
 source("helper.R")
 
 ## 1. Preprocessing dataset  -----
-data <- read_excel("data2.xlsx", sheet = "data")
+data <- read_excel("dataset.xlsx")
 
 data_clean <- data %>%
   mutate(
