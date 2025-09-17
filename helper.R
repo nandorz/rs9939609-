@@ -121,7 +121,7 @@ stat_analysis <- function(data = data_clean, output, model){
 ## 2. Forest plot function -----
 generate_plot <- function(data = data_clean, stats = "adjusted", model = "Codominant", output = "Central_Obesity"){
   {
-    res = stat_analysis(data = data, output = "Central_Obesity", model = "Codominant")[[stats]]
+    res = stat_analysis(data = data, output = output, model = model)[[stats]]
     
     n_data <- nrow(res)
     
@@ -211,4 +211,5 @@ generate_plot <- function(data = data_clean, stats = "adjusted", model = "Codomi
     (p_left | p_mid | p_right) + plot_layout(widths = c(0.9, 0.9, 0.25))
   }
   
+
 }
