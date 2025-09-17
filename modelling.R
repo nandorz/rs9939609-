@@ -2,12 +2,14 @@ library(readxl)
 library(dplyr)
 library(table1)
 library(tidyr)
+library(ggpubr)
 
 source("helper.R")
 
 ## 1. Preprocessing dataset  -----
 data <- read_excel("dataset.xlsx")
 
+## cleaning dataset
 data_clean <- data %>%
   mutate(
     Age = USIA,
@@ -51,14 +53,17 @@ data_clean <- data %>%
   ) %>%
   select(Age, Gender, Weight, Height, Activity, `Food_Intake`, Codominant, Dominant, Recessive, Obesity, Central_Obesity)
 
+## modelling multiple regression analysis where outcome is central obesity
 model.mult_codominant1 <- glm(Central_Obesity ~ Age + Gender + Activity + Food_Intake + Codominant, data = data_clean, family = binomial)
 model.mult_dominant1 <- glm(Central_Obesity ~ Age + Gender + Activity + Food_Intake + Dominant, data = data_clean, family = binomial)
 model.mult_recessive1 <- glm(Central_Obesity ~ Age + Gender + Activity + Food_Intake + Recessive, data = data_clean, family = binomial)
 
+## modelling multiple regression analysis where outcome is obesity
 model.mult_codominant2 <- glm(Obesity ~ Age + Gender + Activity + Food_Intake + Codominant, data = data_clean, family = binomial)
 model.mult_dominant2 <- glm(Obesity ~ Age + Gender + Activity + Food_Intake + Dominant, data = data_clean, family = binomial)
 model.mult_recessive2 <- glm(Obesity ~ Age + Gender + Activity + Food_Intake + Recessive, data = data_clean, family = binomial)
 
+## storing modelling results
 model_list <- list()
 
 model_list[["Central_Obesity"]][["Codominant"]] <- model.mult_codominant1
@@ -70,10 +75,12 @@ model_list[["Obesity"]][["Dominant"]] <- model.mult_dominant2
 model_list[["Obesity"]][["Recessive"]] <- model.mult_recessive2
 
 ## 2. Generating Stats Analysis Results -----
+## central obesity
 codominant.central_obesity <- stat_analysis(data = data_clean, output = "Central_Obesity", model = "Codominant")
 dominant.central_obesity <- stat_analysis(data = data_clean, output = "Central_Obesity", model = "Dominant")
 recessive.central_obesity <- stat_analysis(data = data_clean, output = "Central_Obesity", model = "Recessive")
 
+## obesity
 codominant.obesity <- stat_analysis(data = data_clean, output = "Obesity", model = "Codominant")
 dominant.obesity <- stat_analysis(data = data_clean, output = "Obesity", model = "Dominant")
 recessive.cobesity <- stat_analysis(data = data_clean, output = "Obesity", model = "Recessive")
@@ -90,12 +97,26 @@ p4 <- generate_plot(data = data_clean, stats = "unadjusted", model = "Codominant
 p5 <- generate_plot(data = data_clean, stats = "unadjusted", model = "Dominant", output = "Obesity")
 p6 <- generate_plot(data = data_clean, stats = "unadjusted", model = "Recessive", output = "Obesity")
 
-ggsave(filename = "plot_obesity_adjusted_codominant.png", plot = p1, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_obesity_adjusted_dominant.png", plot = p2, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_obesity_adjusted_recessive.png", plot = p3, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_obesity_unadjusted_codominant.png", plot = p4, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_obesity_unadjusted_dominant.png", plot = p5, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_obesity_unadjusted_recessive.png", plot = p6, width = 12, height = 4, dpi = 300)
+p123 <- ggpubr::ggarrange(
+  p1, p2, p3,
+  labels = c("A", "B", "C"),
+  ncol = 1, nrow = 3
+)
+p456 <- ggpubr::ggarrange(
+  p4, p5, p6,
+  labels = c("A", "B", "C"),
+  ncol = 1, nrow = 3
+)
+
+ggsave(filename = "plot/plot_obesity_adjusted_codominant.png", plot = p1, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_obesity_adjusted_dominant.png", plot = p2, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_obesity_adjusted_recessive.png", plot = p3, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_obesity_unadjusted_codominant.png", plot = p4, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_obesity_unadjusted_dominant.png", plot = p5, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_obesity_unadjusted_recessive.png", plot = p6, width = 12, height = 4, dpi = 300)
+
+ggsave(filename = "plot/plot_obesity_adjusted_all_model.png", plot = p123, width = 12, height = 13, dpi = 300)
+ggsave(filename = "plot/plot_obesity_unajusted_all_model.png", plot = p456, width = 12, height = 13, dpi = 300)
 
 ## Central Obesity
 p7 <- generate_plot(data = data_clean, stats = "adjusted", model = "Codominant", output = "Central_Obesity")
@@ -105,9 +126,23 @@ p10 <- generate_plot(data = data_clean, stats = "unadjusted", model = "Codominan
 p11 <- generate_plot(data = data_clean, stats = "unadjusted", model = "Dominant", output = "Central_Obesity")
 p12 <- generate_plot(data = data_clean, stats = "unadjusted", model = "Recessive", output = "Central_Obesity")
 
-ggsave(filename = "plot_central_obesity_adjusted_codominant.png", plot = p7, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_central_obesity_adjusted_dominant.png", plot = p8, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_central_obesity_adjusted_recessive.png", plot = p9, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_central_obesity_unadjusted_codominant.png", plot = p10, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_central_obesity_unadjusted_dominant.png", plot = p11, width = 12, height = 4, dpi = 300)
-ggsave(filename = "plot_central_obesity_unadjusted_recessive.png", plot = p12, width = 12, height = 4, dpi = 300)
+p789 <- ggpubr::ggarrange(
+  p7, p8, p9,
+  labels = c("A", "B", "C"),
+  ncol = 1, nrow = 3
+)
+p101112 <- ggpubr::ggarrange(
+  p10, p11, p12,
+  labels = c("A", "B", "C"),
+  ncol = 1, nrow = 3
+)
+
+ggsave(filename = "plot/plot_central_obesity_adjusted_codominant.png", plot = p7, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_central_obesity_adjusted_dominant.png", plot = p8, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_central_obesity_adjusted_recessive.png", plot = p9, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_central_obesity_unadjusted_codominant.png", plot = p10, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_central_obesity_unadjusted_dominant.png", plot = p11, width = 12, height = 4, dpi = 300)
+ggsave(filename = "plot/plot_central_obesity_unadjusted_recessive.png", plot = p12, width = 12, height = 4, dpi = 300)
+
+ggsave(filename = "plot/plot_central_obesity_adjusted_all_model.png", plot = p789, width = 12, height = 13, dpi = 300)
+ggsave(filename = "plot/plot_central_obesity_unajusted_all_model.png", plot = p101112, width = 12, height = 13, dpi = 300)
